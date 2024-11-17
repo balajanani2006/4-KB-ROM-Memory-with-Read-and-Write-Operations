@@ -32,91 +32,106 @@ In this design, we will implement a 4KB ROM. Since ROM is typically read-only, w
 
 4KB = 4096 Bytes = 4096 x 8 bits
 
- module rom_memory (
-input wire clk,
-input wire write_enable,   // Signal to enable write operation
-input wire [11:0] address, // 12-bit address for 4KB memory
-input wire [7:0] data_in,  // Data to write into ROM
-output reg [7:0] data_out  // Data read from ROM
-);
-// Declare ROM with 4096 memory locations (each 8 bits wide)
-reg [7:0] rom[0:4095];
+module ripple_adders ( input [3:0] A, input [3:0] B, input Cin, output [3:0] Sum, output Cout );
 
-always @(posedge clk) begin
-    if (write_enable) begin
-        // Write operation: Write data into the ROM at the given address
-        rom[address] <= data_in;
-    end
-    // Read operation: Read data from the ROM at the given address
-    data_out <= rom[address];
+reg [3:0] sum_temp;
+reg cout_temp;
+reg cout_final;
+
+task full_adder;
+    input a, b, cin;
+    output sum, cout;
+begin
+    sum = a ^ b ^ cin;
+    cout = (a & b) | (b & cin) | (cin & a);
 end
+endtask
+
+always @(*) begin
+    full_adder(A[0], B[0], Cin, sum_temp[0], cout_temp);
+    full_adder(A[1], B[1], cout_temp, sum_temp[1], cout_temp);
+    full_adder(A[2], B[2], cout_temp, sum_temp[2], cout_temp);
+    full_adder(A[3], B[3], cout_temp, sum_temp[3], cout_final);
+end
+
+assign Sum = sum_temp;
+assign Cout = cout_final;
 endmodule
 
+Testbench code for 4-bit Ripple carry adder
+module ripple_adder_tb;
 
-test bench
-/ rom_memory_tb.v
-`timescale 1ns / 1ps
+reg [3:0] A, B;
+reg Cin;
+wire [3:0] Sum;
+wire Cout;
 
-module rom_memory_tb;
-
-// Inputs
-reg clk;
-reg write_enable;
-reg [11:0] address;
-reg [7:0] data_in;
-
-// Outputs
-wire [7:0] data_out;
-
-// Instantiate the ROM module
-rom_memory uut (
-    .clk(clk),
-    .write_enable(write_enable),
-    .address(address),
-    .data_in(data_in),
-    .data_out(data_out)
+// Instantiate the ripple carry adder
+ripple_adders uut (
+    .A(A),
+    .B(B),
+    .Cin(Cin),
+    .Sum(Sum),
+    .Cout(Cout)
 );
 
-// Clock generation
-always #5 clk = ~clk;  // Toggle clock every 5 ns
-
-// Test procedure
 initial begin
-    // Initialize inputs
-    clk = 0;
-    write_enable = 0;
-    address = 0;
-    data_in = 0;
-
-    // Write data into memory
-    #10 write_enable = 1; address = 12'd0; data_in = 8'hA5;  // Write 0xA5 at address 0
-    #10 write_enable = 1; address = 12'd1; data_in = 8'h5A;  // Write 0x5A at address 1
-    #10 write_enable = 1; address = 12'd2; data_in = 8'hFF;  // Write 0xFF at address 2
-    #10 write_enable = 1; address = 12'd3; data_in = 8'h00;  // Write 0x00 at address 3
-
-    // Disable write and start reading from memory
-    #10 write_enable = 0; address = 12'd0;
-    #10 address = 12'd1;
-    #10 address = 12'd2;
-    #10 address = 12'd3;
-
-    // Stop the simulation
-    #10 $stop;
+    // Test cases
+    A = 4'b0001; B = 4'b0010; Cin = 0; #10;
+    A = 4'b0110; B = 4'b0101; Cin = 0; #10;
+    A = 4'b1111; B = 4'b0001; Cin = 0; #10;
+    A = 4'b1010; B = 4'b1101; Cin = 1; #10;
+    A = 4'b1111; B = 4'b1111; Cin = 1; #10;
+    $stop;
 end
 
-// Monitor the values for verification
 initial begin
-    $monitor("Time = %0t | Write Enable = %b | Address = %h | Data In = %h | Data Out = %h", 
-             $time, write_enable, address, data_in, data_out);
+    $monitor("Time = %0t | A = %b | B = %b | Cin = %b | Sum = %b | Cout = %b",
+             $time, A, B, Cin, Sum, Cout);
 end
+
+![image](https://github.com/user-attachments/assets/238614b8-59bd-4431-a756-74ea6f1ac7f2)
+
+Verilog code for 4-bit Ripple counter
+module ripple_counter_4bit ( input clk, // Clock signal input reset, // Reset signal output reg [3:0] Q // 4-bit output for the counter value );
+
+// Function to calculate next state function [3:0] next_state; input [3:0] curr_state; begin next_state = curr_state + 1; end endfunction
+
+// Sequential logic for counter always @(posedge clk or posedge reset) begin if (reset) Q <= 4'b0000; // Reset the counter to 0 else Q <= next_state(Q); // Increment the counter end
 
 endmodule
 
-output
-![image](https://github.com/user-attachments/assets/cdd6e058-0f9e-42c7-a5f4-6600f2ac7bbc)
+Testbench code for 4-bit Ripple counter
+module ripple_counter_4bit_tb;
+
+reg clk; reg reset; wire [3:0] Q;
+
+// Instantiate the ripple counter ripple_counter_4bit uut ( .clk(clk), .reset(reset), .Q(Q) );
+
+// Clock generation (10ns period) always #5 clk = ~clk;
+
+initial begin // Initialize inputs clk = 0; reset = 1;
+
+// Hold reset for 20ns
+#20 reset = 0;
+
+// Run simulation for 200ns
+#200 $stop;
+end
+
+initial begin $monitor("Time = %0t | Reset = %b | Q = %b", $time, reset, Q); end
+
+endmodule
+
+OUTPUT
+
+![image](https://github.com/user-attachments/assets/201e0780-e326-47b6-ad06-7ff3e91b8a0f)
 
 
-![image](https://github.com/user-attachments/assets/cce4b545-16c5-4fdb-a97d-baa607ac9fe6)
+
+
+
+
 
 Conclusion
 In this experiment, a 4KB ROM memory with read and write operations was designed and successfully simulated using Verilog HDL. The testbench verified both the write and read functionalities by simulating the memory operations and observing the output waveforms. The experiment demonstrates how to implement memory operations in Verilog, effectively modeling both the reading and writing processes for ROM.
