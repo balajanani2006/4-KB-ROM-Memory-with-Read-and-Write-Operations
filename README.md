@@ -31,7 +31,7 @@ Verilog Code for 4KB ROM Memory with Read and Write Operations
 In this design, we will implement a 4KB ROM. Since ROM is typically read-only, we will simulate the behavior as if it's writable, but in actual hardware, ROM is typically pre-programmed.
 
 4KB = 4096 Bytes = 4096 x 8 bits
-
+```
 module rom_memory ( input clk,
 input rst,
 input rw,
@@ -43,7 +43,7 @@ end else if (rw) begin mem[address] <= data_in; end else begin data_out <= mem[a
 
 endmodule
 
-
+```
 
 ![image](https://github.com/user-attachments/assets/7c9e7eac-ffea-4ec5-8f08-b4284fdd2a02)
 
@@ -51,7 +51,7 @@ endmodule
 Testbench for 4KB ROM Memory
 
 `timescale 1ns / 1ps
-
+```
 module tb_rom_memory; reg clk; reg rst; reg rw;
 reg [11:0] address;
 reg [7:0] data_in;
@@ -69,7 +69,7 @@ data_in = 8'd200;
 #10; $finish; end
 
 endmodule
-
+```
 
 OUTPUT
 
