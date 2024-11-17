@@ -90,7 +90,8 @@ initial begin
              $time, A, B, Cin, Sum, Cout);
 end
 
-![image](https://github.com/user-attachments/assets/238614b8-59bd-4431-a756-74ea6f1ac7f2)
+![image](https://github.com/user-attachments/assets/34be9acd-9331-484b-abb9-689c95d3ad7d)
+
 
 Verilog code for 4-bit Ripple counter
 module ripple_counter_4bit ( input clk, // Clock signal input reset, // Reset signal output reg [3:0] Q // 4-bit output for the counter value );
@@ -125,7 +126,8 @@ endmodule
 
 OUTPUT
 
-![image](https://github.com/user-attachments/assets/201e0780-e326-47b6-ad06-7ff3e91b8a0f)
+![image](https://github.com/user-attachments/assets/058635da-b9f0-4455-a4e9-ff778d3ff312)
+
 
 
 
